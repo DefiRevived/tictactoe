@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TicTacToe</title>
+  <style>
+    td {
+      border: 1px solid black;
+      width: 50px;
+      height: 50px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 32px;
+    }
+
+    td.x {
+      color: blue;
+    }
+
+    td.o {
+      color: red;
+    }
+
+    td.winner {
+      background-color: yellow;
+    }
+
+    td.tie {
+      background-color: gray;
+    }
+
+    .message {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>TicTacToe</h1>
+  <table>
+    <tbody>
+      <tr>
+        <td id="cell-0-0" onclick="makeMove(0, 0)"></td>
+        <td id="cell-0-1" onclick="makeMove(0, 1)"></td>
+        <td id="cell-0-2" onclick="makeMove(0, 2)"></td>
+      </tr>
+      <tr>
+        <td id="cell-1-0" onclick="makeMove(1, 0)"></td>
+        <td id="cell-1-1" onclick="makeMove(1, 1)"></td>
+        <td id="cell-1-2" onclick="makeMove(1, 2)"></td>
+      </tr>
+      <tr>
+        <td id="cell-2-0" onclick="makeMove(2, 0)"></td>
+        <td id="cell-2-1" onclick="makeMove(2, 1)"></td>
+        <td id="cell-2-2" onclick="makeMove(2, 2)"></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="message"></div>
+  <button onclick="joinGame()">Join Game</button>
+  <button onclick="withdraw()">Withdraw</button>
+  
+</body>
+</html>
