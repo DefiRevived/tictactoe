@@ -1,0 +1,249 @@
+// Global variables
+let player1;
+let player2;
+let turn;
+let gameFinished;
+let winner;
+let prize;
+let moveCount;
+let playerBalance = {};
+let hasWithdrawn = {};
+let BOARD_SIZE = 3;
+let board = [
+  [0, 0, 0],
+  [0, 0, 0],
+  [0, 0, 0],
+];
+
+// Events
+function onNewGame(event) {
+  player1 = event.returnValues.player1;
+  player2 = event.returnValues.player2;
+  prize = event.returnValues.prize;
+  turn = 1;
+  gameFinished = false;
+  winner = 0;
+  moveCount = 0;
+  playerBalance = {};
+  hasWithdrawn = {};
+  board = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ];
+  updateBoard();
+  updateMessage("");
+}
+
+function onNewMove(event) {
+  const player = event.returnValues.player;
+  const row = event.returnValues.row;
+  const col = event.returnValues.col;
+  const symbol = player === player1 ? "X" : "O";
+  board[row][col] = player;
+  document.getElementById(`cell-${row}-${col}`).classList.add(symbol.toLowerCase());
+  if (isWinner(player)) {
+    gameFinished = true;
+    winner = player;
+    playerBalance[player1] = 0;
+    playerBalance[player2] = 0;
+    if (player === player1) {
+      playerBalance[player1] = prize;
+    } else {
+      playerBalance[player2] = prize;
+    }
+    updateMessage(`Player ${symbol} wins!`);
+    updateBoard();
+  } else if (moveCount === BOARD_SIZE * BOARD_SIZE) {
+    gameFinished = true;
+    playerBalance[player1] = prize / 2;
+    playerBalance[player2] = prize / 2;
+    updateMessage("It's a tie!");
+    updateBoard();
+  } else {
+    turn = turn === 1 ? 2 : 1;
+    updateMessage(`Player ${turn === 1 ? "X" : "O"}'s turn`);
+  }
+}
+
+function onGameFinished(event) {
+  if (event.returnValues.winner === "0x0000000000000000000000000000000000000000") {
+    updateMessage("Game finished. It's a tie!");
+  } else {
+    const symbol = event.returnValues.winner === player1 ? "X" : "O";
+    updateMessage(`Game finished. Player ${symbol} wins!`);
+  }
+  updateBoard();
+}
+
+function onGameWithdraw(event) {
+  const player = event.returnValues.player;
+  const amount = event.returnValues.amount;
+  playerBalance[player] -= amount;
+  updateMessage(`Player ${player === player1 ? "X" : "O"} withdrew ${amount} ether`);
+}
+
+// Helper functions
+function updateBoard() {
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const cell = document.getElementById(`cell-${row}-${col}`);
+      cell.innerHTML = board[row][col] === 1 ? "X" : board[row][col] === 2 ? "O" : "";
+      cell.classList.remove("x", "o");
+    }
+  }
+  if (gameFinished) {
+    if (winner !== 0) {
+      const symbol = winner === player1 ? "X" : "O";
+document.querySelectorAll(.${symbol.toLowerCase()}).forEach(cell => cell.classList.add("winner"));
+} else {
+document.querySelectorAll("td").forEach(cell => cell.classList.add("tie"));
+}
+}
+}
+
+function updateMessage(message) {
+document.querySelector(".message").innerHTML = message;
+}
+
+function joinGame() {
+const xhr = new XMLHttpRequest();
+xhr.open("POST", "/join");
+xhr.onreadystatechange = function() {
+if (xhr.readyState === 4 && xhr.status === 200) {
+const response = JSON.parse(xhr.responseText);
+if (response.success) {
+updateMessage(Joined game ${response.gameId}. Waiting for second player...);
+} else {
+updateMessage(Error: ${response.error});
+}
+}
+};
+xhr.send();
+}
+
+function makeMove(row, col) {
+if (!gameFinished && board[row][col] === 0 && turn === 1) {
+const xhr = new XMLHttpRequest();
+xhr.open("POST", "/move");
+xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+xhr.onreadystatechange = function() {
+if (xhr.readyState === 4 && xhr.status === 200) {
+const response = JSON.parse(xhr.responseText);
+if (response.success) {
+updateMessage(Moved to cell (${row}, ${col}));
+} else {
+updateMessage(Error: ${response.error});
+}
+}
+};
+xhr.send(JSON.stringify({ row, col }));
+} else {
+updateMessage(Invalid move: (${row}, ${col}));
+}
+}
+
+function withdraw() {
+if (!gameFinished && playerBalance[web3.eth.accounts[0]]) {
+const xhr = new XMLHttpRequest();
+xhr.open("POST", "/withdraw");
+xhr.onreadystatechange = function() {
+if (xhr.readyState === 4 && xhr.status === 200) {
+const response = JSON.parse(xhr.responseText);
+if (response.success) {
+updateMessage(Withdrawn ${response.amount} ether);
+hasWithdrawn[web3.eth.accounts[0]] = true;
+} else {
+updateMessage(Error: ${response.error});
+}
+}
+};
+xhr.send();
+} else {
+updateMessage("Withdraw not available");
+}
+}
+
+// Check if the player has won
+function isWinner(player) {
+// Check rows
+for (let i = 0; i < BOARD_SIZE; i++) {
+let win = true;
+for (let j = 0; j < BOARD_SIZE; j++) {
+if (board[i][j] !== player) {
+win = false;
+break;
+}
+}
+if (win) {
+return true;
+}
+}
+// Check columns
+for (let i = 0; i < BOARD_SIZE; i++) {
+let win = true;
+for (let j = 0; j < BOARD_SIZE; j++) {
+if (board[j][i] !== player) {
+win = false;
+break;
+}
+}
+if (win) {
+return true;
+}
+}
+// Check diagonals
+let win = true;
+for (let i = 0; i < BOARD_SIZE; i++) {
+if (board[i][i] !== player) {
+win = false;
+break;
+}
+}
+if (win) {
+return true;
+}
+win = true;
+for (let i = 0; i < BOARD_SIZE; i++) {
+if (board[i][BOARD_SIZE - i - 1] !== player) {
+win = false;
+break;
+
+// Check diagonals
+let win = true;
+for (let i = 0; i < BOARD_SIZE; i++) {
+if (board[i][i] !== player) {
+win = false;
+break;
+}
+}
+if (win) {
+return true;
+}
+win = true;
+for (let i = 0; i < BOARD_SIZE; i++) {
+if (board[i][BOARD_SIZE - i - 1] !== player) {
+win = false;
+break;
+}
+}
+if (win) {
+return true;
+}
+// If not winning yet, return false
+return false;
+}
+
+// Add event listeners
+document.querySelectorAll("td").forEach(cell => {
+cell.addEventListener("click", function() {
+const row = cell.dataset.row;
+const col = cell.dataset.col;
+makeMove(row, col);
+});
+});
+
+document.querySelector("#withdraw").addEventListener("click", withdraw);
+
+// Join game
+joinGame();
